@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: maple-api-router-service
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+#        - id: authModule
+#          uri: http://localhost:8082/
+#          predicates:
+#            - Path=/api/auth/login
+#          filters:
+#            - RewritePath=/api/auth/login,/api/v1/auth/login
+#        - id: userModule
+#          uri: http://localhost:8082/
+#          predicates:
+#            - Path=/api/organizations/*/users/**
+#          filters:
+#            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+#            - SessionResolverFilter
+        - id: organizationModule
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/api/organizations/**
+          filters:
+            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+#            - SessionResolverFilter
+        - id: projectModule
+          uri: http://localhost:8083/
+          predicates:
+            - Path=/api/projects/**
+          filters:
+            - RewritePath=/api/projects(?<segment>.*),/api/v1/projects$\{segment}
+  #            - SessionResolverFilter
+        - id: userAccountModule
+          uri: http://localhost:8084/
+          predicates:
+            - Path=/api/organizations/*/user-accounts/*
+          filters:
+            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+  #            - SessionResolverFilter
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 860
+  error:
+    include-stacktrace: never

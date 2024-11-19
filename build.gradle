@@ -1,0 +1,78 @@
+plugins {
+	id "java"
+	id "groovy"
+	id "org.springframework.boot" version "3.2.3"
+	id "io.spring.dependency-management" version "1.1.4"
+	id "org.unbroken-dome.test-sets" version "4.1.0"
+}
+
+group = "com.maple"
+version = "1.0"
+sourceCompatibility = "21"
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set("springCloudVersion", "2023.0.0")
+	set("testcontainersVersion", "1.19.7")
+	set("spockVersion", "2.4-M2-groovy-4.0")
+	set("mockServerVersion", "5.15.0")
+}
+
+apply from: "${rootDir}/gradle/integration-test.gradle"
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+dependencies {
+
+	implementation ("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
+
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+	implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
+
+    implementation("org.apache.httpcomponents.client5:httpclient5")
+	implementation("org.apache.commons:commons-lang3:3.14.0")
+	implementation("commons-collections:commons-collections:3.2.2")
+
+	implementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.85.Final", classifier: "osx-aarch_64"
+	
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	integrationTestImplementation("io.rest-assured:rest-assured:5.4.0") {
+
+	}
+	integrationTestAnnotationProcessor "org.projectlombok:lombok"
+
+	integrationTestImplementation("org.spockframework:spock-core:${spockVersion}")
+	integrationTestImplementation("org.spockframework:spock-spring:${spockVersion}")
+
+	integrationTestImplementation("org.testcontainers:junit-jupiter:${testcontainersVersion}")
+	integrationTestImplementation("org.testcontainers:localstack:${testcontainersVersion}")
+
+	integrationTestImplementation("org.mock-server:mockserver-client-java:${mockServerVersion}")
+	integrationTestImplementation("org.mock-server:mockserver-netty:${mockServerVersion}")
+}
+
+tasks.named("test") {
+	useJUnitPlatform()
+	finalizedBy integrationTest
+}
+
+integrationTest {
+	useJUnitPlatform()
+}

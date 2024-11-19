@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maple-api-router-service
+  namespace: maple-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maple-api-router-service
+  template:
+    metadata:
+      labels:
+        app: maple-api-router-service
+    spec:
+      containers:
+        - name: maple-api-router-service
+          imagePullPolicy: Never
+          image: maple-api-router-service:latest
+          ports:
+            - containerPort: 8080
