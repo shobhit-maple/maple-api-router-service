@@ -28,7 +28,7 @@ public class SessionResolverFilter extends AbstractGatewayFilterFactory {
       }
       return webClient
           .get()
-          .uri("http://localhost:8082/api/v1/auth/session")
+          .uri("http://maple-user-auth-service:8081/api/v1/auth/session")
           .header(HttpHeaders.AUTHORIZATION, authHeader.get(0))
           .retrieve()
           .bodyToMono(Session.class)
