@@ -12,40 +12,34 @@ spring:
             allowedMethods: "*"
             allowedHeaders: "*"
       routes:
-#        - id: authModule
-#          uri: http://localhost:8082/
-#          predicates:
-#            - Path=/api/auth/login
-#          filters:
-#            - RewritePath=/api/auth/login,/api/v1/auth/login
-#        - id: userModule
-#          uri: http://localhost:8082/
-#          predicates:
-#            - Path=/api/organizations/*/users/**
-#          filters:
-#            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-#            - SessionResolverFilter
+        - id: authModule
+          uri: http://maple-user-auth-service:8081/
+          predicates:
+            - Path=/api/auth/login
+          filters:
+            - RewritePath=/api/auth/login,/api/v1/auth/login
+        - id: userAccountModule
+          uri: http://maple-user-account-service:8084/
+          predicates:
+            - Path=/api/organizations/*/user-accounts/**
+          filters:
+            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+            - SessionResolverFilter
         - id: organizationModule
-          uri: http://localhost:8082/
+          uri: http://maple-organization-service:8082/
           predicates:
             - Path=/api/organizations/**
           filters:
             - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-#            - SessionResolverFilter
+            - SessionResolverFilter
         - id: projectModule
-          uri: http://localhost:8083/
+          uri: http://maple-project-service:8083/
           predicates:
             - Path=/api/projects/**
           filters:
             - RewritePath=/api/projects(?<segment>.*),/api/v1/projects$\{segment}
-  #            - SessionResolverFilter
-        - id: userAccountModule
-          uri: http://localhost:8084/
-          predicates:
-            - Path=/api/organizations/*/user-accounts/*
-          filters:
-            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-  #            - SessionResolverFilter
+            - SessionResolverFilter
+
   jackson:
     property-naming-strategy: SNAKE_CASE
 
