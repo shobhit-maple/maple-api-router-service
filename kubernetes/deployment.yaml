@@ -1,21 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: maple-api-router-service
+  name: maple-api-router-deployment
   namespace: maple-system
+  labels:
+    app: maple-api-router
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: maple-api-router-service
+      app: maple-api-router
   template:
     metadata:
       labels:
-        app: maple-api-router-service
+        app: maple-api-router
     spec:
       containers:
-        - name: maple-api-router-service
-          imagePullPolicy: Never
-          image: maple-api-router-service:latest
+        - name: maple-api-router-container
+          image: shobhittyagi1011/maple-api-router-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3

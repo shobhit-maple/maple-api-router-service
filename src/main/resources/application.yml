@@ -3,6 +3,9 @@ spring:
     name: maple-api-router-service
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 500
+        response-timeout: 5s
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       globalcors:
@@ -12,40 +15,41 @@ spring:
             allowedMethods: "*"
             allowedHeaders: "*"
       routes:
-#        - id: authModule
-#          uri: http://localhost:8082/
-#          predicates:
-#            - Path=/api/auth/login
-#          filters:
-#            - RewritePath=/api/auth/login,/api/v1/auth/login
-#        - id: userModule
-#          uri: http://localhost:8082/
-#          predicates:
-#            - Path=/api/organizations/*/users/**
-#          filters:
-#            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-#            - SessionResolverFilter
+        - id: authModule
+          uri: http://maple-user-auth-service:80/
+          predicates:
+            - Path=/api/auth/login
+          filters:
+            - RewritePath=/api/auth/login,/api/v1/auth/login
+        - id: userAccountModule
+          uri: http://maple-user-account-service:80/
+          predicates:
+            - Path=/api/organizations/*/user-accounts/**
+          filters:
+            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+            - SessionResolverFilter
+        - id: userAccountImageModule
+          uri: http://maple-user-account-service:80/
+          predicates:
+            - Path=/api/user-accounts/*/images/**
+          filters:
+            - RewritePath=/api/user-accounts(?<segment>.*),/api/v1/user-accounts$\{segment}
+            - SessionResolverFilter
+        - id: projectModule
+          uri: http://maple-project-service:80/
+          predicates:
+            - Path=/api/organizations/*/projects/**
+          filters:
+            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
+            - SessionResolverFilter
         - id: organizationModule
-          uri: http://localhost:8082/
+          uri: http://maple-organization-service:80/
           predicates:
             - Path=/api/organizations/**
           filters:
             - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-#            - SessionResolverFilter
-        - id: projectModule
-          uri: http://localhost:8083/
-          predicates:
-            - Path=/api/projects/**
-          filters:
-            - RewritePath=/api/projects(?<segment>.*),/api/v1/projects$\{segment}
-  #            - SessionResolverFilter
-        - id: userAccountModule
-          uri: http://localhost:8084/
-          predicates:
-            - Path=/api/organizations/*/user-accounts/*
-          filters:
-            - RewritePath=/api/organizations(?<segment>.*),/api/v1/organizations$\{segment}
-  #            - SessionResolverFilter
+            - SessionResolverFilter
+
   jackson:
     property-naming-strategy: SNAKE_CASE
 

@@ -1,5 +1,6 @@
 package com.maple.router.filter;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class SessionResolverFilter extends AbstractGatewayFilterFactory {
 
@@ -28,7 +30,7 @@ public class SessionResolverFilter extends AbstractGatewayFilterFactory {
       }
       return webClient
           .get()
-          .uri("http://localhost:8082/api/v1/auth/session")
+          .uri("http://maple-user-auth-service:80/api/v1/auth/session")
           .header(HttpHeaders.AUTHORIZATION, authHeader.get(0))
           .retrieve()
           .bodyToMono(Session.class)
@@ -48,6 +50,7 @@ public class SessionResolverFilter extends AbstractGatewayFilterFactory {
               })
           .onErrorResume(
               err -> {
+                log.error("Failed when resolving the session", err);
                 val httpStatus =
                     err instanceof WebClientResponseException
                         ? ((WebClientResponseException) err).getStatusCode()
