@@ -29,3 +29,21 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 2
             failureThreshold: 3
+
+        - name: envoy
+          image: envoyproxy/envoy:v1.27.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9901
+            - containerPort: 8081
+          volumeMounts:
+            - name: maple-api-router-envoy-config
+              mountPath: /etc/envoy
+          args:
+            - "--config-path"
+            - "/etc/envoy/envoy.yaml"
+
+      volumes:
+        - name: maple-api-router-envoy-config
+          configMap:
+            name: maple-api-router-envoy-config
