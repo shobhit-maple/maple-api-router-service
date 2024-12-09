@@ -6,9 +6,13 @@ metadata:
   labels:
     app: maple-api-router
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-    - port: 80
-      targetPort: 8080
+    - name: admin
+      port: 9901
+      targetPort: 9901
+    - name: envoy
+      port: 8081
+      targetPort: 8081
   selector:
     app: maple-api-router
