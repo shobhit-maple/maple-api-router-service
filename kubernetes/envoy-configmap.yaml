@@ -30,8 +30,7 @@ data:
               - lb_endpoints:
                   - endpoint:
                       address:
-                        socket_address: { address: maple-zipkin-service.tracing.svc.cluster.local, port_value: 9411 }
-
+                        socket_address: { address: maple-zipkin-service.maple-tracing.svc.cluster.local, port_value: 9411 }
       listeners:
         - name: maple-api-router-listener
           address:
@@ -41,10 +40,11 @@ data:
                 - name: envoy.filters.network.http_connection_manager
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-                    generate_request_id: true
                     codec_type: AUTO
-                    stat_prefix: ingress_http
+                    stat_prefix: maple-api-router-service
                     tracing:
+                      overall_sampling:
+                        value: 100.0
                       provider:
                         name: envoy.tracers.zipkin
                         typed_config:
@@ -60,18 +60,27 @@ data:
                           domains: ["*"]
                           routes:
                             - match: { prefix: "/" }
+                              response_headers_to_add:
+                                - header:
+                                    key: "X-B3-TraceId"
+                                    value: "%REQ(X-B3-TraceId)%"
+                                - header:
+                                    key: "X-B3-SpanId"
+                                    value: "%REQ(X-B3-SpanId)%"
+                                - header:
+                                    key: "X-Request-ID"
+                                    value: "%REQ(X-Request-ID)%"
                               route:
                                 cluster: maple-api-router-cluster
                     http_filters:
                       - name: envoy.filters.http.router
                         typed_config:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-                    access_log:
-                      - name: envoy.access_loggers.file
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                          path: /tmp/envoy_access.log
-
+    node:
+      id: maple-api-router
+      cluster: maple-api-router-service
+      metadata:
+        SERVICE_NAME: maple-api-router-service
     admin:
       access_log_path: "/tmp/admin_access.log"
       address:
