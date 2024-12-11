@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Session {
 
-  private Long userId;
-  private Long organizationId;
+  private String userId;
+  private String organizationId;
   private List<String> roles;
 }

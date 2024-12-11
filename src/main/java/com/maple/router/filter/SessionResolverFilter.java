@@ -1,7 +1,6 @@
 package com.maple.router.filter;
 
-import java.util.List;
-import java.util.Optional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -18,27 +17,24 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class SessionResolverFilter extends AbstractGatewayFilterFactory {
 
-  private final WebClient webClient = WebClient.create();
-  private static final String HEADER_TRACE_ID = "x-b3-traceid";
+  private final WebClient.Builder webClientBuilder;
 
   @Override
   public GatewayFilter apply(final Object config) {
     return (exchange, chain) -> {
       val request = exchange.getRequest();
       val authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION);
-      val traceHeader = request.getHeaders().get(HEADER_TRACE_ID);
       if (authHeader == null || authHeader.size() != 1) {
         throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
       }
-      return webClient
+      return webClientBuilder
+          .build()
           .get()
-          .uri("http://maple-user-auth-service:8081/api/v1/auth/session")
-          .header(HttpHeaders.AUTHORIZATION, authHeader.getFirst())
-          .header(
-              HEADER_TRACE_ID,
-              Optional.ofNullable(traceHeader).map(List::getFirst).orElse("unknown"))
+          .uri("http://maple-user-auth-service.maple-system.svc.cluster.local:8081/api/v1/auth/session")
+          .header(HttpHeaders.AUTHORIZATION, authHeader.get(0))
           .retrieve()
           .bodyToMono(Session.class)
           .flatMap(
@@ -48,8 +44,10 @@ public class SessionResolverFilter extends AbstractGatewayFilterFactory {
                     request
                         .mutate()
                         .header("X-User-Roles", response.getRoles().toArray(roleArray))
-                        .header("X-User-Id", String.valueOf(response.getUserId()))
-                        .header("X-Organization-Id", String.valueOf(response.getOrganizationId()))
+                        .header("X-User-Id", response.getUserId())
+                        .header(
+                            "X-Organization-Id",
+                            String.valueOf(response.getOrganizationId()))
                         .build();
                 return chain.filter(exchange.mutate().request(newRequest).build());
               })
