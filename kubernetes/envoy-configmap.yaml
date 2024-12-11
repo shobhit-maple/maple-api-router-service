@@ -30,6 +30,7 @@ data:
                 - name: envoy.filters.network.http_connection_manager
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                    generate_request_id: true
                     codec_type: AUTO
                     stat_prefix: ingress_http
                     route_config:
@@ -39,13 +40,16 @@ data:
                           domains: ["*"]
                           routes:
                             - match: { prefix: "/" }
+                              request_headers_to_add:
+                                - header:
+                                    key: "X-Request-ID"
+                                    value: "%REQ(X-Request-ID)%"
                               route:
                                 cluster: maple-api-router-cluster
                     http_filters:
                       - name: envoy.filters.http.router
                         typed_config:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-
     admin:
       access_log_path: "/tmp/admin_access.log"
       address:
