@@ -1,7 +1,7 @@
 plugins {
 	id "java"
 	id "groovy"
-	id "org.springframework.boot" version "3.2.3"
+	id "org.springframework.boot" version "3.4.4"
 	id "io.spring.dependency-management" version "1.1.4"
 	id "org.unbroken-dome.test-sets" version "4.1.0"
 }
@@ -21,8 +21,8 @@ repositories {
 }
 
 ext {
-	set("springCloudVersion", "2023.0.0")
-	set("testcontainersVersion", "1.19.7")
+	set("springCloudVersion", "2024.0.1")
+	set("testcontainersVersion", "1.24.0")
 	set("spockVersion", "2.4-M2-groovy-4.0")
 	set("mockServerVersion", "5.15.0")
 }
@@ -51,6 +51,7 @@ dependencies {
     implementation("org.apache.httpcomponents.client5:httpclient5")
 	implementation("org.apache.commons:commons-lang3:3.14.0")
 	implementation("commons-collections:commons-collections:3.2.2")
+	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	implementation group: "io.netty", name: "netty-resolver-dns-native-macos", version: "4.1.85.Final", classifier: "osx-aarch_64"
 	
